@@ -6,9 +6,10 @@ class DifferentiableDynamicsModelVectorized:
     A differentiable dynamics model for the 2D environment, optimized for vectorized operations.
     This model predicts the outcomes of action plans and scores them.
     """
-    def __init__(self, env: Environment2DVectorized, safety_weight: float = 0.1):
+    def __init__(self, env: Environment2DVectorized, safety_weight: float = 0.1, action_weight: float = 0.01):
         self.env = env
         self.safety_weight = safety_weight
+        self.action_weight = action_weight
 
     def rollout_plans(self, start_pos: torch.Tensor, plans: torch.Tensor):
         """
@@ -104,4 +105,9 @@ class DifferentiableDynamicsModelVectorized:
             total_safety_cost = torch.sum(safety_cost.view(num_plans, plan_horizon), dim=1)
             safety_penalty = -self.safety_weight * total_safety_cost
 
-        return goal_score + collision_penalty + safety_penalty
+        # --- Action Cost ---
+        # Penalize large actions to encourage smoother paths.
+        action_cost = torch.sum(torch.linalg.norm(plans, dim=2), dim=1)
+        action_penalty = -self.action_weight * action_cost
+
+        return goal_score + collision_penalty + safety_penalty + action_penalty
