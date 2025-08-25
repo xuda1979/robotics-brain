@@ -4,6 +4,7 @@ import time
 from src.environments._2d_env_vectorized import Environment2DVectorized
 from src.planning.dynamics_vectorized import DifferentiableDynamicsModelVectorized
 from src.planning.planner import GPUParallelPlanner
+from src.planning.cem_planner import CEMPlanner
 from src.visualization.plot import plot_plan
 
 class RobotBrain:
@@ -42,8 +43,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the GPU-based 2D planner (Vectorized).")
     parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'],
                         help='Device to run the planner on (cuda or cpu).')
+    parser.add_argument('--planner', type=str, default='sample_and_refine', choices=['sample_and_refine', 'cem'],
+                        help='Planner to use.')
     parser.add_argument('--safety-weight', type=float, default=0.5,
                         help='Weight for the safety cost in the planner.')
+    parser.add_argument('--num-elites', type=int, default=64,
+                        help='Number of elite samples for the CEM planner.')
     args = parser.parse_args()
     device = args.device
 
@@ -84,13 +89,22 @@ def main() -> None:
         num_plans = 4096
         iterations = 100
 
-    planner = GPUParallelPlanner(
-        dynamics_model,
-        num_plans=num_plans,
-        plan_horizon=20,
-        iterations=iterations
-    )
-    print("Planner initialized.")
+    if args.planner == 'sample_and_refine':
+        planner = GPUParallelPlanner(
+            dynamics_model,
+            num_plans=num_plans,
+            plan_horizon=20,
+            iterations=iterations
+        )
+    elif args.planner == 'cem':
+        planner = CEMPlanner(
+            dynamics_model,
+            num_plans=num_plans,
+            plan_horizon=20,
+            iterations=iterations,
+            num_elites=args.num_elites
+        )
+    print(f"Planner '{args.planner}' initialized.")
 
     # --- Robot Brain ---
     brain = RobotBrain(planner, dynamics_model)
