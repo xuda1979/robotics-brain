@@ -1,72 +1,72 @@
 # robotics-brain
-Repository for developing a state-of-the-art robotics brain using open-source models and innovative algorithms, with documentation and research papers.
+一个使用开源模型和创新算法开发最先进的机器人大脑，并包含文档和研究论文的存储库。
 
-## Overview
+## 概述
 
-This project aims to build the next-generation robotics brain by leveraging state-of-the-art open-source models and by developing novel algorithms for perception, planning, control and learning.
+本项目旨在利用最先进的开源模型，并通过开发新颖的感知、规划、控制和学习算法，来构建下一代机器人大脑。
 
-This repository contains a prototype implementation of a **GPU-accelerated motion planner** for a 2D navigation task. The planner, inspired by recent research in parallelized plan sampling and refinement, uses `torch` to evaluate thousands of potential action sequences on a GPU. It refines the best candidate plan using gradient-based optimization through a differentiable dynamics model. This approach allows for rapid generation of collision-free paths in environments with static obstacles.
+本存储库包含一个用于2D导航任务的 **GPU加速运动规划器** 的原型实现。该规划器受到并行化计划采样和优化最新研究的启发，使用 `torch` 在GPU上评估数千个潜在的动作序列。它通过一个可微的动力学模型，使用基于梯度的优化方法来改进最佳候选计划。这种方法可以在具有静态障碍物的环境中快速生成无碰撞的路径。
 
-The current implementation includes:
-- A `RobotBrain` class that orchestrates the planning process.
-- A `GPUParallelPlanner` that samples and refines motion plans.
-- A differentiable 2D environment with a dynamics model for simulation.
-- Visualization tools to plot the resulting plan.
+当前实现包括：
+- 一个 `RobotBrain` 类，用于协调规划过程。
+- 一个 `GPUParallelPlanner` 类，用于采样和优化运动计划。
+- 一个带有动力学模型的可微2D环境，用于仿真。
+- 用于绘制最终计划的可视化工具。
 
-### Research Directions
+### 研究方向
 
-This project will continue to investigate new algorithms and methods, including but not limited to:
+本项目将继续研究新的算法和方法，包括但不限于：
 
-1. **Hybrid VLA‑Diffusion Architectures:** Combining the semantic understanding of VLA models with the precision control of diffusion policies for improved dexterity and robustness.
-2. **Hierarchical World‑Models with Language Interface:** Building latent dynamics models that can be queried and updated via natural language.
-3. **Self‑Improving Generalist Agents:** Developing mechanisms for agents to automatically collect new data and self‑train.
-4. **Multi‑Agent Collaboration:** Exploring coordination strategies for teams of robots.
-5. **Safety‑Aware Planning and Execution:** Integrating formal safety constraints and uncertainty estimation into the planning loop.
+1. **混合VLA-扩散架构：** 结合VLA模型的语义理解能力和扩散策略的精确控制，以提高灵活性和鲁棒性。
+2. **带语言接口的层级式世界模型：** 构建可通过自然语言查询和更新的潜在动力学模型。
+3. **自我提升的通用智能体：** 开发智能体自动收集新数据和自我训练的机制。
+4. **多智能体协作：** 探索机器人团队的协调策略。
+5. **安全感知的规划与执行：** 将形式化的安全约束和不确定性估计整合到规划循环中。
 
-The **papers** directory will contain drafts and notes for original research papers arising from these directions.
+**papers** 目录将包含由这些研究方向产生的原创研究论文的草稿和笔记。
 
-## Getting Started
+## 入门指南
 
-This project requires Python, `torch`, and `matplotlib`. For best performance, a NVIDIA GPU with CUDA is recommended.
+本项目需要 Python、`torch` 和 `matplotlib`。为获得最佳性能，建议使用带CUDA的NVIDIA GPU。
 
-### Installation
+### 安装
 
-1. Clone the repository:
+1. 克隆存储库：
    ```bash
    git clone https://github.com/your-username/robotics-brain.git
    cd robotics-brain
    ```
 
-2. Install the required dependencies:
+2. 安装所需的依赖项：
    ```bash
    pip install -r requirements.txt
    ```
 
-### Running the Demo
+### 运行演示
 
-To run the 2D planning demo, execute the `main.py` script:
+要运行2D规划演示，请执行 `main.py` 脚本：
 
 ```bash
 python main.py
 ```
 
-The script will default to using a CUDA device if available. To run on a CPU, use the `--device` flag:
+如果CUDA设备可用，脚本将默认使用它。要在CPU上运行，请使用 `--device` 标志：
 ```bash
 python main.py --device cpu
 ```
-Note: Running on CPU is significantly slower and uses less complex planner settings.
+注意：在CPU上运行会明显更慢，并使用较简单的规划器设置。
 
-The script will:
-1. Set up a 2D environment with a start point, a goal, and several obstacles.
-2. Initialize the `GPUParallelPlanner`.
-3. Run the planner to find a collision-free path.
-4. Print the final action plan to the console.
-5. Save a visualization of the plan as `plan_visualization.png` in the root directory.
+该脚本将：
+1. 设置一个包含起点、目标和若干障碍物的2D环境。
+2. 初始化 `GPUParallelPlanner`。
+3. 运行规划器以找到无碰撞的路径。
+4. 将最终的行动计划打印到控制台。
+5. 将计划的可视化结果保存为根目录下的 `plan_visualization.png`。
 
-Here is an example of the output visualization:
+以下是输出可视化的一个示例：
 
 ![Plan Visualization](plan_visualization.png)
 
-## Contributions
+## 贡献
 
-Contributions are welcome. Please open an issue or pull request if you have ideas, find issues, or want to contribute to the research directions.
+欢迎贡献。如果您有想法、发现问题或希望为研究方向做出贡献，请创建 issue 或 pull request。

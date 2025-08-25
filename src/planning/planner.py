@@ -2,17 +2,17 @@ import torch
 
 class GPUParallelPlanner:
     """
-    A planner that samples and scores candidate action plans on the GPU and refines them.
+    一个在GPU上采样、评分并优化候选行动计划的规划器。
     """
     def __init__(self, dynamics_model, num_plans: int = 2048, plan_horizon: int = 12, iterations: int = 10):
         """
-        Initializes the planner.
+        初始化规划器。
 
         Args:
-            dynamics_model: An instance of a differentiable dynamics model.
-            num_plans (int): The number of candidate plans to sample in parallel.
-            plan_horizon (int): The number of steps in each plan.
-            iterations (int): The number of refinement iterations.
+            dynamics_model: 一个可微动力学模型的实例。
+            num_plans (int): 并行采样的候选计划数量。
+            plan_horizon (int): 每个计划中的步数。
+            iterations (int): 优化迭代的次数。
         """
         self.dynamics_model = dynamics_model
         self.num_plans = num_plans
@@ -21,27 +21,27 @@ class GPUParallelPlanner:
         self.device = self.dynamics_model.env.device
 
     def sample_and_evaluate_plans(self, start_pos, goal_pos):
-        """Sample random plans and evaluate them in parallel on the GPU."""
-        # Sample random action sequences (Gaussian noise)
-        # The scale of the noise (0.1 here) is a hyperparameter that can be tuned.
+        """在GPU上并行采样随机计划并进行评估。"""
+        # 采样随机动作序列（高斯噪声）
+        # 噪声的规模（此处为0.1）是一个可以调整的超参数。
         plans = torch.randn(self.num_plans, self.plan_horizon, 2, device=self.device) * 0.1
 
-        # Evaluate each plan using the dynamics model. Higher score is better.
+        # 使用动力学模型评估每个计划。分数越高越好。
         scores = self.dynamics_model.score_plans(start_pos, goal_pos, plans)
 
         best_idx = torch.argmax(scores)
         return plans[best_idx], scores[best_idx]
 
     def refine_plan(self, start_pos, goal_pos, plan: torch.Tensor, learning_rate: float = 0.1):
-        """Refine the selected plan via gradient ascent on the plan score."""
+        """通过对计划分数进行梯度提升来优化所选计划。"""
         refined_plan = plan.clone().detach().requires_grad_(True)
         optimizer = torch.optim.Adam([refined_plan], lr=learning_rate)
 
         for _ in range(self.iterations):
             optimizer.zero_grad()
-            # We need to score a batch of size 1
+            # 我们需要对一个大小为1的批次进行评分
             score = self.dynamics_model.score_plans(start_pos, goal_pos, refined_plan.unsqueeze(0))
-            # We want to maximize the score, so we use -score for minimization
+            # 我们想要最大化分数，所以我们使用-score进行最小化
             loss = -score.mean()
             loss.backward()
             optimizer.step()
@@ -50,26 +50,26 @@ class GPUParallelPlanner:
 
     def plan(self, start_pos, goal_pos):
         """
-        Generate and refine a plan for a given start and goal.
+        为给定的起点和终点生成并优化一个计划。
 
         Args:
-            start_pos (torch.Tensor): The starting position of the robot, shape (2,).
-            goal_pos (torch.Tensor): The goal position, shape (2,).
+            start_pos (torch.Tensor): 机器人的起始位置，形状为 (2,)。
+            goal_pos (torch.Tensor): 目标位置，形状为 (2,)。
 
         Returns:
-            torch.Tensor: The final, refined plan, shape (plan_horizon, 2).
+            torch.Tensor: 最终优化后的计划，形状为 (plan_horizon, 2)。
         """
-        # 1. Sample a batch of plans and find the best one
-        print(f"Sampling {self.num_plans} plans...")
+        # 1. 采样一批计划并找到最好的一个
+        print(f"正在采样 {self.num_plans} 个计划...")
         best_plan, best_score = self.sample_and_evaluate_plans(start_pos, goal_pos)
-        print(f"Best initial plan score: {best_score:.2f}")
+        print(f"最佳初始计划得分: {best_score:.2f}")
 
-        # 2. Refine the best plan using gradient-based optimization
-        print(f"Refining plan for {self.iterations} iterations...")
+        # 2. 使用基于梯度的优化方法优化最佳计划
+        print(f"正在优化计划，迭代 {self.iterations} 次...")
         refined_plan = self.refine_plan(start_pos, goal_pos, best_plan)
 
-        # Optional: score the final plan
+        # 可选：对最终计划进行评分
         final_score = self.dynamics_model.score_plans(start_pos, goal_pos, refined_plan.unsqueeze(0)).squeeze()
-        print(f"Final refined plan score: {final_score:.2f}")
+        print(f"最终优化计划得分: {final_score:.2f}")
 
         return refined_plan
