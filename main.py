@@ -43,6 +43,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the GPU-based 2D planner.")
     parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'],
                         help='Device to run the planner on (cuda or cpu).')
+    parser.add_argument('--safety-weight', type=float, default=0.5,
+                        help='Weight for the safety cost in the planner.')
     args = parser.parse_args()
     device = args.device
 
@@ -69,7 +71,7 @@ def main() -> None:
 
     # --- Model and Planner ---
     print("Initializing models...")
-    dynamics_model = DifferentiableDynamicsModel(env)
+    dynamics_model = DifferentiableDynamicsModel(env, safety_weight=args.safety_weight)
 
     # Use different parameters for CPU vs GPU for timely execution
     if device == 'cpu':
