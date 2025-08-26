@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+.env
+
+# Webots
+.session.lock
+*.wbproj
+*.wbt~
+*.wbu
+*.wbz

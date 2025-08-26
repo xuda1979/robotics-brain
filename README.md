@@ -42,17 +42,23 @@
    pip install -r requirements.txt
    ```
 
+3. **安装Webots模拟器：**
+   本项目使用[Webots](https://cyberbotics.com/)进行虚拟测试。请从[官方网站](https://cyberbotics.com/#download)下载并安装Webots。
+   Python `controller` API是Webots安装的一部分。
+
 ### 运行演示
+
+#### 2D环境
 
 要运行2D规划演示，请执行 `main.py` 脚本：
 
 ```bash
-python main.py
+python main.py --environment 2d
 ```
 
 如果CUDA设备可用，脚本将默认使用它。要在CPU上运行，请使用 `--device` 标志：
 ```bash
-python main.py --device cpu
+python main.py --environment 2d --device cpu
 ```
 注意：在CPU上运行会明显更慢，并使用较简单的规划器设置。
 
@@ -62,6 +68,16 @@ python main.py --device cpu
 3. 运行规划器以找到无碰撞的路径。
 4. 将最终的行动计划打印到控制台。
 5. 将计划的可视化结果保存为根目录下的 `plan_visualization.png`。
+
+#### Webots环境
+
+要运行Webots仿真，请确保您已安装Webots，然后从Webots应用程序中打开 `worlds/default.wbt` 文件。然后，在终端中运行以下命令：
+
+```bash
+python main.py --environment webots
+```
+
+该脚本将连接到正在运行的Webots仿真，并使用规划器来计算路径。
 
 以下是输出可视化的一个示例：
 
