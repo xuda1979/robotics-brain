@@ -1,2 +1,6 @@
 torch
 matplotlib
+
+# Webots simulator is also required.
+# Please install it from: https://cyberbotics.com/
+# The 'controller' package is part of the Webots installation.
