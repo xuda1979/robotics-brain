@@ -25,6 +25,18 @@
 
 **papers** 目录将包含由这些研究方向产生的原创研究论文的草稿和笔记。
 
+### 论文
+
+- **[Cross-Modal Diffusion Control for Robotic Manipulation](./papers/diffusion_policy_control/)**: 引入了一个用于机器人操作的框架，该框架使用扩散策略整合视觉、触觉和本体感觉输入，以提高在富接触任务中的性能。
+- **[Height-Dimension Neural Networks for Robotic Control](./papers/height_dimension_network/)**: 提出使用具有垂直、层内连接的高度维度神经网络（HD-Nets），以增强机器人感知和控制的时间推理与记忆能力。
+- **[A Hierarchical Foundation Model for Generalist Robots](./papers/hierarchical_foundation_model/)**: 提出了一个分层模型，将高层的、与形态无关的任务规划与底层的、特定于形态的运动控制分离，以创建通用型机器人。
+- **[Online LENS: Neuromorphic Navigation with On-the-Fly Map Building](./papers/lens_navigation/)**: 扩展了LENS系统，通过使用事件相机和脉冲关联记忆，实现在新环境中的在线地图构建和传感器融合，以进行自主导航。
+- **[Lifelong Dreamer: A World Model for Continual Reinforcement Learning](./papers/lifelong_world_model_rl/)**: 将Dreamer风格的世界模型与非参数化知识空间相结合，以实现持续学习，使智能体能够在整个生命周期内积累和重用技能。
+- **[Adaptive Lp-Convolution for Robust Robotic Vision](./papers/lp_convolution_vision/)**: 提出使用能够动态改变卷积核形状的Lp-Convolution，以创建更强大、更高效的机器人视觉系统，从而适应多样化和充满挑战的真实世界场景。
+- **[Learning to Collaborate: A Multi-Agent Cognitive Graph for Embodied AI](./papers/multi_agent_cognitive_graph/)**: 引入了一个使用动态图和图神经网络（GNN）的框架，使机器人团队能够学习协调的、协作的行为。
+- **[Neuromorphic SLAM: Continuous Learning with Spiking Neural Networks](./papers/snn_navigation/)**: 提出了一种使用脉冲神经网络（SNNs）和事件相机的SLAM系统，通过脉冲时间依赖可塑性（STDP）实现对环境地图的连续在线学习。
+- **[Adaptive Swarm Control for Cyborg Insects](./papers/swarm_control/)**: 提出了一个具有动态领导者选举和分散式学习协调功能的生物机器人集群框架，以创建更稳健、更有弹性、更高效的集群来完成复杂任务。
+
 ## 入门指南
 
 本项目需要 Python、`torch` 和 `matplotlib`。为获得最佳性能，建议使用带CUDA的NVIDIA GPU。
