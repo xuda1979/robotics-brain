@@ -1,7 +1,8 @@
 import torch
 from controller import Supervisor, DistanceSensor, Motor
+from .base import DynamicEnv
 
-class WebotsEnvironment:
+class WebotsEnvironment(DynamicEnv):
     """
     Represents the Webots simulation environment for the robot.
     """

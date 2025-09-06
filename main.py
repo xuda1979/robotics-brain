@@ -1,7 +1,7 @@
 import argparse
 import torch
-from src.environments._2d_env import Environment2D
-from src.environments._webots_env import WebotsEnvironment
+import importlib
+from src.environments.base import BaseEnv, DynamicEnv
 from src.planning.dynamics import DifferentiableDynamicsModel
 from src.planning.planner import GPUParallelPlanner
 from src.visualization.plot import plot_plan
@@ -10,7 +10,7 @@ class RobotBrain:
     """
     一个机器人大脑，使用基于GPU的并行规划器在2D环境中导航。
     """
-    def __init__(self, planner: GPUParallelPlanner, dynamics_model: DifferentiableDynamicsModel, env) -> None:
+    def __init__(self, planner: GPUParallelPlanner, dynamics_model: DifferentiableDynamicsModel, env: BaseEnv) -> None:
         self.planner = planner
         self.dynamics_model = dynamics_model
         self.env = env
@@ -31,15 +31,14 @@ class RobotBrain:
         full_trajectory = torch.cat([start_pos.unsqueeze(0), trajectory], dim=0)
         return full_trajectory
 
-
     def act(self, plan: torch.Tensor) -> None:
         """
-        通过打印来“执行”一个给定的行动计划。
+        通过向环境发送命令来“执行”一个给定的行动计划。
         """
         print("\n正在执行最终计划（动作序列）:")
         print(plan)
-        if isinstance(self.env, WebotsEnvironment):
-            # 在Webots环境中，我们可以真地移动机器人
+        if isinstance(self.env, DynamicEnv):
+            # 在动态环境中，我们可以真地移动机器人
             # 这是一个非常简单的实现，它只取计划的第一个动作
             # 并设置一个恒定的速度。
             # 一个更复杂的实现会根据计划动态调整速度。
@@ -73,9 +72,26 @@ def main() -> None:
         device = 'cpu'
     print(f"正在使用设备: {device}")
 
-    # --- 环境 ---
+    # --- 环境工厂 ---
+    def get_env_class(env_name):
+        if env_name == '2d':
+            module = importlib.import_module('src.environments._2d_env')
+            return getattr(module, 'Environment2D')
+        elif env_name == 'webots':
+            try:
+                module = importlib.import_module('src.environments._webots_env')
+                return getattr(module, 'WebotsEnvironment')
+            except ModuleNotFoundError:
+                print("错误: 'webots' 环境需要安装 Webots 'controller' 模块。")
+                print("请访问 https://cyberbotics.com/ 进行安装。")
+                exit(1)
+        else:
+            raise ValueError(f"未知的环境: {env_name}")
+
+    env_class = get_env_class(args.environment)
+
+    print(f"正在设置 {args.environment} 环境...")
     if args.environment == '2d':
-        print("正在设置2D环境...")
         start_pos = torch.tensor([0.0, 0.0], device=device)
         goal_pos = torch.tensor([1.0, 1.0], device=device)
         obstacles = [
@@ -83,12 +99,12 @@ def main() -> None:
             torch.tensor([[0.1, 0.7], [0.3, 0.7], [0.2, 0.9]]),
             torch.tensor([[0.7, 0.1], [0.9, 0.1], [0.9, 0.3], [0.7, 0.3]]),
         ]
-        env = Environment2D(start_pos, goal_pos, obstacles, device=device)
-        print("2D环境已创建。")
-    elif args.environment == 'webots':
-        print("正在设置Webots环境...")
-        env = WebotsEnvironment("worlds/default.wbt", device=device)
-        print("Webots环境已创建。")
+        env = env_class(start_pos, goal_pos, obstacles, device=device)
+    else:
+        # 假设其他环境只需要设备参数
+        env = env_class("worlds/default.wbt", device=device)
+    print("环境已创建。")
+
 
     # --- 模型和规划器 ---
     print("正在初始化模型...")
@@ -119,14 +135,14 @@ def main() -> None:
     trajectory = brain.get_trajectory(env.robot_pos, plan)
     brain.act(plan)
 
-    # --- 可视化 ---
+    # --- 可视化与仿真 ---
     if args.environment == '2d':
         print("\n--- 生成可视化 ---")
         plot_plan(env, trajectory, "plan_visualization.png")
         print("\n--- 规划结束 ---")
 
-    if isinstance(env, WebotsEnvironment):
-        print("\n--- Webots仿真循环 ---")
+    if isinstance(env, DynamicEnv):
+        print("\n--- 仿真循环 ---")
         for _ in range(100):
             if not env.step():
                 break
