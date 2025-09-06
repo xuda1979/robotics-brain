@@ -1,5 +1,6 @@
 torch
 matplotlib
+pytest
 
 # Webots simulator is also required.
 # Please install it from: https://cyberbotics.com/

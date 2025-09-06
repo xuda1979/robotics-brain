@@ -63,33 +63,32 @@
 #### 2D环境
 
 要运行2D规划演示，请执行 `main.py` 脚本：
-
 ```bash
 python main.py --environment 2d
 ```
-
-如果CUDA设备可用，脚本将默认使用它。要在CPU上运行，请使用 `--device` 标志：
+默认情况下，这将使用一个固定的环境。要在一个随机生成的环境中测试规划器，请使用 `--random-env` 标志：
 ```bash
-python main.py --environment 2d --device cpu
+python main.py --environment 2d --random-env
 ```
-注意：在CPU上运行会明显更慢，并使用较简单的规划器设置。
-
-该脚本将：
-1. 设置一个包含起点、目标和若干障碍物的2D环境。
-2. 初始化 `GPUParallelPlanner`。
-3. 运行规划器以找到无碰撞的路径。
-4. 将最终的行动计划打印到控制台。
-5. 将计划的可视化结果保存为根目录下的 `plan_visualization.png`。
+此功能，称为**域随机化**，对于测试机器人在各种场景下的鲁棒性至关重要。
 
 #### Webots环境
 
-要运行Webots仿真，请确保您已安装Webots，然后从Webots应用程序中打开 `worlds/default.wbt` 文件。然后，在终端中运行以下命令：
-
+要运行Webots仿真，只需在终端中运行以下命令：
 ```bash
 python main.py --environment webots
 ```
+脚本现在将**自动启动Webots模拟器**。您不再需要手动打开它。
 
-该脚本将连接到正在运行的Webots仿真，并使用规划器来计算路径。
+要在没有GUI的情况下运行（例如，在服务器上），请使用 `--headless` 标志：
+```bash
+python main.py --environment webots --headless
+```
+
+该脚本将：
+1. 启动一个新的Webots仿真实例。
+2. 连接到仿真，并使用规划器计算路径。
+3. 在仿真结束时自动关闭Webots。
 
 以下是输出可视化的一个示例：
 
