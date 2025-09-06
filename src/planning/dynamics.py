@@ -1,12 +1,12 @@
 import torch
-from ..environments._2d_env import Environment2D
+from src.environments.base import BaseEnv
 
 class DifferentiableDynamicsModel:
     """
     一个用于2D环境的可微动力学模型。
     该模型预测行动计划的结果并对其进行评分。
     """
-    def __init__(self, env: Environment2D, safety_weight: float = 0.1):
+    def __init__(self, env: BaseEnv, safety_weight: float = 0.1):
         self.env = env
         self.safety_weight = safety_weight
 

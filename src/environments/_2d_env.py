@@ -1,7 +1,8 @@
 import torch
 from typing import List
+from .base import BaseEnv
 
-class Environment2D:
+class Environment2D(BaseEnv):
     """
     表示一个带有机器人、目标和多边形障碍物的2D环境。
     """
@@ -16,8 +17,8 @@ class Environment2D:
                 凸多边形（顶点按逆时针顺序）的顶点张量 (num_vertices, 2)。
             device (str): 存储张量的设备 ('cpu' 或 'cuda')。
         """
-        self.robot_pos = robot_pos.to(device)
-        self.goal_pos = goal_pos.to(device)
+        self._robot_pos = robot_pos.to(device)
+        self._goal_pos = goal_pos.to(device)
         self.device = device
         self.obstacles = [obs.to(device) for obs in obstacles]
 
@@ -31,6 +32,14 @@ class Environment2D:
                 # 边由顶点i定义到顶点i+1（循环）
                 edges = torch.roll(poly, -1, dims=0) - poly
                 self.obstacle_edges.append(edges)
+
+    @property
+    def robot_pos(self) -> torch.Tensor:
+        return self._robot_pos
+
+    @property
+    def goal_pos(self) -> torch.Tensor:
+        return self._goal_pos
 
 
     def check_collision(self, pos_batch: torch.Tensor) -> torch.Tensor:
