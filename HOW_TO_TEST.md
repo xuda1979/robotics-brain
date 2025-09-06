@@ -32,39 +32,63 @@ The Python script requires `torch` and `matplotlib`. These can be installed usin
     ```
     *Note: The `controller` library needed to communicate with Webots is included with the Webots installation and does not need to be installed via pip.*
 
-## 2. Running the Simulation
+## 2. Running the Virtual Tests
 
-Testing is a two-step process:
-1.  Start the simulation in the Webots application.
-2.  Run the Python controller script to connect to the simulation and control the robot.
+This project supports two main types of virtual testing: a lightweight 2D environment for rapid prototyping and a high-fidelity Webots simulation for more realistic testing.
 
-### Step 1: Open the World in Webots
+### a) 2D Environment (with Domain Randomization)
 
-1.  Launch the Webots application that you installed.
-2.  Go to `File > Open World...`.
-3.  Navigate to the `worlds` directory within this project's folder and select `default.wbt`.
-4.  The simulation environment, containing a robot, obstacles, and a target, will load.
-5.  **Press the "play" button** (the triangle icon) in the Webots toolbar to start the simulation. The simulation will now be running and waiting for a controller to connect.
+The 2D environment is excellent for quickly testing the planner's logic.
 
-![Webots Play Button](https://www.cyberbotics.com/doc/images/webots/play_buttons.png)
+To run with the default, fixed environment:
+```bash
+python main.py --environment 2d
+```
 
-### Step 2: Run the Controller Script
+A key feature for building robust algorithms is **Domain Randomization**. This creates a new, randomized environment every time you run it. To use this, add the `--random-env` flag:
+```bash
+python main.py --environment 2d --random-env
+```
+This will generate a random number of obstacles with random shapes and sizes, along with random start/goal positions. This is a powerful way to ensure the planner is not overtuned to a single scenario.
 
-1.  Open a terminal or command prompt.
-2.  Make sure you are in the root directory of this project.
-3.  Run the `main.py` script with the `webots` environment flag:
+### b) Automated Webots Simulation
+
+The testing workflow with Webots is now fully automated. You no longer need to open the simulator manually.
+
+Simply run the main script with the `webots` environment flag:
+```bash
+python main.py --environment webots
+```
+This command will automatically:
+1.  Launch the Webots simulator in a minimized window.
+2.  Load the `worlds/default.wbt` file.
+3.  Start the simulation.
+4.  Run the Python controller to connect to it and control the robot.
+5.  Shut down the Webots application when the script finishes.
+
+#### Headless Mode
+
+For automated testing or running on a server without a graphical interface, you can use headless mode. This runs the simulation without rendering the 3D view, which saves resources.
+```bash
+python main.py --environment webots --headless
+```
+
+## 3. Running the Unit Tests
+
+The project now includes a test suite using `pytest` to ensure the core components are working correctly.
+
+1.  **Install test dependencies:**
     ```bash
-    python main.py --environment webots
+    pip install -r requirements.txt
     ```
 
-## 3. Expected Outcome
+2.  **Run the tests:**
+    It is recommended to run `pytest` through the Python module flag to ensure it uses the correct environment:
+    ```bash
+    python -m pytest
+    ```
 
-When you run the Python script, you will see output in your terminal indicating that the planner is running. The script will:
-1.  Connect to the running Webots simulation.
-2.  Get the robot's current position and the target's position from the simulator.
-3.  Run the GPU-accelerated planner to calculate an optimal path.
-4.  Send the first action of the plan to the robot's motors.
-5.  You will see the robot in the Webots window move from its starting position.
+You should see output indicating that all tests have passed. This is a great way to verify your setup and ensure that recent changes have not introduced any bugs.
 
 The terminal output will look something like this:
 ```

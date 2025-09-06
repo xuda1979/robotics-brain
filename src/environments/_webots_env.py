@@ -1,20 +1,43 @@
 import torch
+import subprocess
+import time
 from controller import Supervisor, DistanceSensor, Motor
 from .base import DynamicEnv
 
 class WebotsEnvironment(DynamicEnv):
     """
     Represents the Webots simulation environment for the robot.
+    This class can now automatically launch and manage the Webots simulator process.
     """
-    def __init__(self, world_path: str, device: str = "cpu"):
+    def __init__(self, world_path: str, device: str = "cpu", headless=False):
         """
         Initializes the Webots environment.
 
         Args:
             world_path (str): Path to the Webots world file (.wbt).
             device (str): The device to use for torch tensors ('cpu' or 'cuda').
+            headless (bool): If True, run Webots without rendering the GUI.
         """
         self.device = device
+        self.webots_process = None
+
+        # --- Launch Webots Process ---
+        try:
+            webots_command = ["webots", "--batch", f"--mode=fast", "--minimize", world_path]
+            if headless:
+                webots_command.append("--no-rendering")
+
+            print(f"正在启动Webots: {' '.join(webots_command)}")
+            self.webots_process = subprocess.Popen(webots_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print("已启动Webots进程。等待初始化...")
+            time.sleep(10) # 等待Webots完全加载
+        except FileNotFoundError:
+            print("错误: 'webots' 命令未找到。")
+            print("请确保Webots已安装并且其可执行文件在您的系统PATH中。")
+            exit(1)
+        except Exception as e:
+            print(f"启动Webots时出错: {e}")
+            exit(1)
 
         # Initialize the Supervisor instance
         self.robot = Supervisor()
@@ -100,6 +123,19 @@ class WebotsEnvironment(DynamicEnv):
 
     def close(self):
         """
-        Cleans up the Webots simulation.
+        Cleans up the Webots simulation and terminates the simulator process.
         """
+        print("正在关闭Webots仿真...")
         self.robot.simulationQuit(0)
+
+        if self.webots_process:
+            print("正在终止Webots进程...")
+            self.webots_process.terminate()
+            try:
+                # 等待进程终止
+                self.webots_process.wait(timeout=5)
+                print("Webots进程已终止。")
+            except subprocess.TimeoutExpired:
+                print("Webots进程未在5秒内终止。强制终止...")
+                self.webots_process.kill()
+                print("Webots进程已被强制终止。")

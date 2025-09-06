@@ -63,6 +63,10 @@ def main() -> None:
                         help='运行规划器的设备（cuda或cpu）。')
     parser.add_argument('--safety-weight', type=float, default=0.5,
                         help='规划器中安全成本的权重。')
+    parser.add_argument('--random-env', action='store_true',
+                        help='如果设置，则为2D环境使用随机生成的障碍物。')
+    parser.add_argument('--headless', action='store_true',
+                        help='在无头模式下运行Webots（无GUI）。')
     args = parser.parse_args()
     device = args.device
 
@@ -92,17 +96,22 @@ def main() -> None:
 
     print(f"正在设置 {args.environment} 环境...")
     if args.environment == '2d':
-        start_pos = torch.tensor([0.0, 0.0], device=device)
-        goal_pos = torch.tensor([1.0, 1.0], device=device)
-        obstacles = [
-            torch.tensor([[0.4, 0.4], [0.6, 0.4], [0.6, 0.6], [0.4, 0.6]]),
-            torch.tensor([[0.1, 0.7], [0.3, 0.7], [0.2, 0.9]]),
-            torch.tensor([[0.7, 0.1], [0.9, 0.1], [0.9, 0.3], [0.7, 0.3]]),
-        ]
-        env = env_class(start_pos, goal_pos, obstacles, device=device)
+        if args.random_env:
+            print("正在生成随机2D环境...")
+            env = env_class.create_random(device=device)
+        else:
+            print("正在使用默认的2D环境...")
+            start_pos = torch.tensor([0.0, 0.0], device=device)
+            goal_pos = torch.tensor([1.0, 1.0], device=device)
+            obstacles = [
+                torch.tensor([[0.4, 0.4], [0.6, 0.4], [0.6, 0.6], [0.4, 0.6]]),
+                torch.tensor([[0.1, 0.7], [0.3, 0.7], [0.2, 0.9]]),
+                torch.tensor([[0.7, 0.1], [0.9, 0.1], [0.9, 0.3], [0.7, 0.3]]),
+            ]
+            env = env_class(start_pos, goal_pos, obstacles, device=device)
     else:
-        # 假设其他环境只需要设备参数
-        env = env_class("worlds/default.wbt", device=device)
+        # Webots环境
+        env = env_class("worlds/default.wbt", device=device, headless=args.headless)
     print("环境已创建。")
 
 
