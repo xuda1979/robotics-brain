@@ -4,13 +4,15 @@ import importlib
 from src.environments.base import BaseEnv, DynamicEnv
 from src.planning.dynamics import DifferentiableDynamicsModel
 from src.planning.planner import GPUParallelPlanner
+from src.planning.cem_planner import CEMPlanner
+from src.planning.mppi_planner import MPPIPlanner
 from src.visualization.plot import plot_plan
 
 class RobotBrain:
     """
     一个机器人大脑，使用基于GPU的并行规划器在2D环境中导航。
     """
-    def __init__(self, planner: GPUParallelPlanner, dynamics_model: DifferentiableDynamicsModel, env: BaseEnv) -> None:
+    def __init__(self, planner, dynamics_model: DifferentiableDynamicsModel, env: BaseEnv) -> None:
         self.planner = planner
         self.dynamics_model = dynamics_model
         self.env = env
@@ -67,6 +69,12 @@ def main() -> None:
                         help='如果设置，则为2D环境使用随机生成的障碍物。')
     parser.add_argument('--headless', action='store_true',
                         help='在无头模式下运行Webots（无GUI）。')
+    parser.add_argument('--planner', type=str, default='mppi', choices=['simple', 'cem', 'mppi'],
+                        help='要使用的规划器 (simple, cem, mppi)。')
+    parser.add_argument('--temperature', type=float, default=0.5,
+                        help='MPPI 规划器的温度参数。')
+    parser.add_argument('--noise-std', type=float, default=0.3,
+                        help='MPPI 规划器的探索噪声标准差。')
     args = parser.parse_args()
     device = args.device
 
@@ -127,12 +135,33 @@ def main() -> None:
         num_plans = 4096
         iterations = 100
 
-    planner = GPUParallelPlanner(
-        dynamics_model,
-        num_plans=num_plans,
-        plan_horizon=20,
-        iterations=iterations
-    )
+    if args.planner == 'simple':
+        print("Using Simple GPU Parallel Planner")
+        planner = GPUParallelPlanner(
+            dynamics_model,
+            num_plans=num_plans,
+            plan_horizon=20,
+            iterations=iterations
+        )
+    elif args.planner == 'cem':
+        print("Using CEM Planner")
+        planner = CEMPlanner(
+            dynamics_model,
+            num_plans=num_plans,
+            plan_horizon=20,
+            iterations=iterations
+        )
+    elif args.planner == 'mppi':
+        print(f"Using MPPI Planner (T={args.temperature}, sigma={args.noise_std})")
+        planner = MPPIPlanner(
+            dynamics_model,
+            num_plans=num_plans,
+            plan_horizon=20,
+            iterations=iterations,
+            temperature=args.temperature,
+            noise_std=args.noise_std
+        )
+
     print("规划器已初始化。")
 
     # --- 机器人大脑 ---
