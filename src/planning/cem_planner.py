@@ -3,6 +3,7 @@ import torch
 class CEMPlanner:
     """
     A planner that uses the Cross-Entropy Method (CEM) to find an optimal action plan.
+    This implementation uses a Gaussian distribution to model the action sequences.
     """
     def __init__(self, dynamics_model, num_plans: int = 2048, plan_horizon: int = 12, iterations: int = 10, num_elites: int = 64):
         """
